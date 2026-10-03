@@ -1,0 +1,32 @@
+name: Automatic Backup
+
+on:
+  push:
+    branches:
+      - main
+
+  schedule:
+    - cron: "0 6 * * 1"
+
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create ZIP backup
+        run: |
+          mkdir -p backup
+          zip -r "backup/tehnikiemporiki-backup-${GITHUB_RUN_ID}.zip" . \
+            -x ".git/*" "backup/*"
+
+      - name: Upload backup
+        uses: actions/upload-artifact@v4
+        with:
+          name: tehnikiemporiki-backup-${{ github.run_id }}
+          path: backup/*.zip
+          retention-days: 90
